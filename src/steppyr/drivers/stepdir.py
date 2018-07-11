@@ -17,11 +17,11 @@ class StepDirDriver(Driver):
 
   def enable(self):
     if self._enable_pin:
-      GPIO.setup(self._enable_pin, GPIO.OUT, initial=GPIO.LOW)
+      GPIO.setup(self._enable_pin, GPIO.OUT, initial=GPIO.HIGH)
 
   def disable(self):
     if self._enable_pin:
-      GPIO.setup(self._enable_pin, GPIO.OUT, initial=GPIO.HIGH)
+      GPIO.setup(self._enable_pin, GPIO.OUT, initial=GPIO.LOW)
 
   def activate(self):
     GPIO.setmode(self._pin_mode)
