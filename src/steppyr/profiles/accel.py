@@ -74,7 +74,11 @@ class AccelProfile(RampProfile):
       # self._current_speed = 0.0
       # self._ramp_step_number = 0
       self.stop()
-      self.set_current_steps(0)
+      #self.set_current_steps(0)
+      log.debug('Computed new speed. _direction=%s, _current_steps=%s, _target_steps=%s, distance_to_go=%s, _ramp_step_number=%s, _current_speed=%s, _step_interval_us=%s',
+              self._direction, self._current_steps,
+              self._target_steps, self.steps_to_go,
+              self._ramp_step_number, self._current_speed, self._step_interval_us)
       return
 
     if distanceTo > 0:
@@ -119,12 +123,12 @@ class AccelProfile(RampProfile):
     self._step_interval_us = self._ramp_delay_n_us
     self._next_step_time_us = micros() + self._step_interval_us
     self._current_speed = calc_speed_from_step_interval(self._ramp_delay_n_us)
-
+    
     log.debug('Computed new speed. _direction=%s, _current_steps=%s, _target_steps=%s, distance_to_go=%s, _ramp_step_number=%s, _current_speed=%s, _step_interval_us=%s',
               self._direction, self._current_steps,
               self._target_steps, self.steps_to_go,
               self._ramp_step_number, self._current_speed, self._step_interval_us)
-
+    
   def set_current_steps(self, position):
     super().set_current_steps(position)
     self._ramp_step_number = 0
