@@ -185,7 +185,7 @@ class RampProfile:
   @property
   def direction(self):
     """
-    Calculates direction based on distance to go
+    Calculates direction based on distance to go 
     """
     # return DIRECTION_CW if self.distance_to_go > 0 else DIRECTION_CCW
     return self._speed_memory or calc_direction(self.steps_to_go)
