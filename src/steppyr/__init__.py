@@ -57,6 +57,13 @@ class StepperController:
     """
     self.move(calc_degrees_to_steps(degrees, self._profile.full_steps_per_rev, self._profile.microsteps))
 
+  def speed(self, speed):
+    """
+    Schedules move at given speed unlimited until you stop it.
+    TODO self programmed
+    """
+    self._profile.speed(speed)
+
   async def run_forever(self):
     """
     Continuously call run() as fast as possible.
