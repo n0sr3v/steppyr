@@ -67,6 +67,28 @@ class AccelProfile(RampProfile):
     # stepsToStop = int(((self._current_speed * self._current_speed) / (2.0 * self._target_acceleration))) # Equation 16
     # Get number of steps until stop per Equation 16
     stepsToStop = int(calc_ramp_step_number_16(self._current_speed , self._target_acceleration))
+    
+    log.debug('Speed settings self._speed=%s, self._speed_memory=%s, self.direction=%s, self._direction=%s', self._speed, self._speed, self.direction, self._direction)
+    # speed logic => trick myself ;)
+    # do i need to make a u turn?
+    if self._speed!=0 and distanceTo == 0 and stepsToStop <= 1:
+      if self._speed > 0 and self._speed_memory<0:
+        self._speed_memory=self._speed
+      elif self._speed < 0 and self._speed_memory>0:
+        self._speed_memory=self._speed
+    # fullpower or slowing down ?
+    if self._speed > 0 and self._speed_memory>0:
+      distanceTo = stepsToStop + 1
+    elif self._speed < 0 and self._speed_memory<0:
+      distanceTo = -(stepsToStop + 1)
+    elif distanceTo == 0 and stepsToStop > 1:
+      if self._speed_memory>0:
+        distanceTo = stepsToStop
+      elif self._speed_memory<0:
+        distanceTo = -stepsToStop
+
+    # step sync logic => trick myself again :D
+	
 
     if distanceTo == 0 and stepsToStop <= 1:
       # We are at the target and its time to stop
@@ -75,12 +97,13 @@ class AccelProfile(RampProfile):
       # self._ramp_step_number = 0
       self.stop()
       #self.set_current_steps(0) # TODO This has been commented out to keep track of the relative steps to start.
+      
       log.debug('Computed new speed. _direction=%s, _current_steps=%s, _target_steps=%s, distance_to_go=%s, _ramp_step_number=%s, _current_speed=%s, _step_interval_us=%s',
               self._direction, self._current_steps,
               self._target_steps, self.steps_to_go,
               self._ramp_step_number, self._current_speed, self._step_interval_us)
       return
-
+      
     if distanceTo > 0:
       # We are anticlockwise from the target
       # Need to go clockwise from here, maybe decelerate now
@@ -123,12 +146,12 @@ class AccelProfile(RampProfile):
     self._step_interval_us = self._ramp_delay_n_us
     self._next_step_time_us = micros() + self._step_interval_us
     self._current_speed = calc_speed_from_step_interval(self._ramp_delay_n_us)
-    
+    '''
     log.debug('Computed new speed. _direction=%s, _current_steps=%s, _target_steps=%s, distance_to_go=%s, _ramp_step_number=%s, _current_speed=%s, _step_interval_us=%s',
               self._direction, self._current_steps,
               self._target_steps, self.steps_to_go,
               self._ramp_step_number, self._current_speed, self._step_interval_us)
-    
+    '''
   def set_current_steps(self, position):
     super().set_current_steps(position)
     self._ramp_step_number = 0
