@@ -36,6 +36,10 @@ class RampProfile:
     # Time in microseconds that last step occured
     self._last_step_time_us = 0
     self._next_step_time_us = None
+    # Set the speed to keep
+    self._speed = 0
+    # direction for speed control
+    self._speed_memory = 0
 
   def stop(self):
     """
@@ -78,6 +82,14 @@ class RampProfile:
     if self._target_steps != absolute_steps:
       self._previous_target_steps = self._target_steps
       self._target_steps = absolute_steps
+      self.compute_new_speed()
+
+  def speed(self, speed):
+    if self._speed != speed:
+      if self._speed_memory == 0:
+        self._speed_memory = speed
+        log.debug('self.direction=%s',self.direction)
+      self._speed = speed
       self.compute_new_speed()
 
   def set_target_acceleration(self, acceleration):
@@ -151,7 +163,7 @@ class RampProfile:
     """
     Returns true if we should take a step.
     """
-    if not self.step_interval_us or not self.steps_to_go:
+    if not self.step_interval_us or not self.steps_to_go and self._speed == 0:
       return False
     return (self._next_step_time_us and micros() >= self._next_step_time_us)
 
@@ -176,7 +188,7 @@ class RampProfile:
     Calculates direction based on distance to go
     """
     # return DIRECTION_CW if self.distance_to_go > 0 else DIRECTION_CCW
-    return calc_direction(self.steps_to_go)
+    return self._speed_memory or calc_direction(self.steps_to_go)
 
   @property
   def step_interval_us(self):
