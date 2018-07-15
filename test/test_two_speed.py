@@ -5,15 +5,16 @@ from steppyr.drivers.stepdir import StepDirDriver
 from contextlib import suppress
 
 logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger(__name__)
 
 # def __init__(self, profile, dir_pin, step_pin, enable_pin=None, pin_mode=GPIO.BCM):
 stepperA = steppyr.StepperController(
-	driver=StepDirDriver(20, 21, 16),
-	profile=accel.AccelProfile()
+    driver=StepDirDriver(20, 21, 16),
+    profile=accel.AccelProfile("A")
 )
 stepperB = steppyr.StepperController(
-	driver=StepDirDriver(19, 13, 26),
-	profile=accel.AccelProfile()
+    driver=StepDirDriver(19, 13, 26),
+    profile=accel.AccelProfile("B")
 )
 stepperA.activate()
 stepperB.activate()
@@ -37,36 +38,42 @@ stepperA.set_pulse_width(2)
 stepperB.set_pulse_width(2)
 
 async def stepperA_move():
-	stepperA.speed(1)
-	await asyncio.sleep(2)
-	stepperA.speed(0)
-	await asyncio.sleep(2)
+    log.debug('stepperA.speed(500)')
+    stepperA.speed(500)
+    await asyncio.sleep(2)
+    log.debug('stepperA.speed(0)')
+    stepperA.speed(0)
+    await asyncio.sleep(2)
 async def stepperB_move():
-	stepperB.speed(-1)
-	await asyncio.sleep(2)
-	stepperB.speed(0)
-	await asyncio.sleep(2)
+    log.debug('stepperB.speed(-500)')
+    stepperB.speed(-500)
+    await asyncio.sleep(2)
+    log.debug('stepperB.speed(500)')
+    stepperB.speed(500)
+    await asyncio.sleep(4)
+    stepperB.speed(0)
+    await asyncio.sleep(2)
 	
 	
 loop = asyncio.get_event_loop()
 asyncio.ensure_future(stepperA.run_forever())
 asyncio.ensure_future(stepperB.run_forever())
 try:
-	loop.run_until_complete(
-		asyncio.gather(
-			stepperA_move(),
-			stepperB_move()
-		)
-	)
+    loop.run_until_complete(
+        asyncio.gather(
+            stepperA_move(),
+            stepperB_move()
+        )
+    )
 finally:
-	stepperA.shutdown()
-	stepperB.shutdown()
-	# Let's also cancel all running tasks:
-	pending = asyncio.Task.all_tasks()
-	for task in pending:
-		task.cancel()
-		# Now we should await task to execute it's cancellation.
-		# Cancelled task raises asyncio.CancelledError that we can suppress:
-		with suppress(asyncio.CancelledError):
-			loop.run_until_complete(task)
-			loop.close()
+    stepperA.shutdown()
+    stepperB.shutdown()
+    # Let's also cancel all running tasks:
+    pending = asyncio.Task.all_tasks()
+    for task in pending:
+        task.cancel()
+        # Now we should await task to execute it's cancellation.
+        # Cancelled task raises asyncio.CancelledError that we can suppress:
+        with suppress(asyncio.CancelledError):
+            loop.run_until_complete(task)
+            loop.close()
