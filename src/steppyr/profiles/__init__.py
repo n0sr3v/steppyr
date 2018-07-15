@@ -98,14 +98,6 @@ class RampProfile:
       self._speed = speed
       log.debug('self._name=%s self.compute_new_speed() self._speed=%s, self.direction=%s',self._name, self._speed, self.direction)
     self.compute_new_speed()
-    
-  def catch_up(self, speed, step_distance):
-    catchup_start_time = micros()
-    steps_at_start = self._current_steps
-    if(step_distance>0):
-      pass
-    elif(step_distance<0):
-      pass
  
   def set_target_acceleration(self, acceleration):
     """
