@@ -4,16 +4,16 @@ from steppyr.profiles import accel
 from steppyr.drivers.stepdir import StepDirDriver
 from contextlib import suppress
 
-#logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 # def __init__(self, profile, dir_pin, step_pin, enable_pin=None, pin_mode=GPIO.BCM):
 stepperA = steppyr.StepperController(
 	driver=StepDirDriver(20, 21, 16),
-	profile=accel.AccelProfile()
+	profile=accel.AccelProfile("A")
 )
 stepperB = steppyr.StepperController(
 	driver=StepDirDriver(19, 13, 26),
-	profile=accel.AccelProfile()
+	profile=accel.AccelProfile("B")
 )
 stepperA.activate()
 stepperB.activate()
