@@ -1,4 +1,5 @@
 import asyncio, logging
+from steppyr.lib.functions import micros
 
 log = logging.getLogger(__name__)
 
@@ -63,7 +64,55 @@ class StepperController:
     TODO self programmed
     """
     self._profile.speed(speed)
+   
+  async def try_sync_to(self, speed, step_delta):
+    """
+    Continuously call run() as fast as possible.
+    """
+    start_time_sync = micros()
+    start_time_steps = self._profile.current_steps
+    if step_delta>0:
+        while (micros()-start_time_sync)/1000000*speed+step_delta > self._profile.current_steps-start_time_steps:
+          log.debug('await self.reached_step_goal(%s,%s)', speed, (((micros()-start_time_sync)/1000000*speed+step_delta) - (self._profile.current_steps-start_time_steps))/4)
+          await self.reached_step_goal(speed, (((micros()-start_time_sync)/1000000*speed+step_delta) - (self._profile.current_steps-start_time_steps))/4)
+          # Without this await, we never yield back to the event loop
+          await asyncio.sleep(0)
+    elif step_delta<0:
+        while (micros()-start_time_sync)/1000000*speed+step_delta < self._profile.current_steps-start_time_steps:
+          log.debug('await self.reached_step_goal(%s,%s)', speed, (((micros()-start_time_sync)/1000000*speed+step_delta) - (self._profile.current_steps-start_time_steps))/4)
+          await self.reached_step_goal(speed, (((micros()-start_time_sync)/1000000*speed+step_delta) - (self._profile.current_steps-start_time_steps))/4)
+          # Without this await, we never yield back to the event loop
+          await asyncio.sleep(0)
 
+  async def reached_step_goal(self, speed, step_delta):
+    """
+    Continuously call run() as fast as possible.
+    """
+    start_time_sync = micros()
+    start_time_steps = self._profile.current_steps
+    if step_delta>0:
+        self.speed(self.target_speed)
+        while (micros()-start_time_sync)/1000000*speed+step_delta > self._profile.current_steps-start_time_steps:
+          # Without this await, we never yield back to the event loop
+          await asyncio.sleep(0)
+        log.debug('half delta reached (%s)', ((micros()-start_time_sync)/1000000*speed+step_delta) - (self._profile.current_steps-start_time_steps))
+        log.debug('micros()/1000000=%s, start_time_sync/1000000=%s, speed=%s, step_delta=%s, self._profile.current_steps=%s, start_time_steps=%s', micros()/1000000, start_time_sync/1000000, speed, step_delta, self._profile.current_steps, start_time_steps)
+        self.speed(speed)
+        while self._profile._current_speed>speed:
+          # Without this await, we never yield back to the event loop
+          await asyncio.sleep(0)
+    elif step_delta<0:
+        self.speed(0)
+        while (micros()-start_time_sync)/1000000*speed+step_delta < self._profile.current_steps-start_time_steps:
+          # Without this await, we never yield back to the event loop
+          await asyncio.sleep(0)
+        log.debug('half delta reached (%s)', (micros()-start_time_sync)/1000000*speed+step_delta - self._profile.current_steps-start_time_steps)
+        self.speed(speed)
+        while self._profile._current_speed<speed:
+          # Without this await, we never yield back to the event loop
+          await asyncio.sleep(0)
+    log.debug('reached final speed ater iteration')
+    
   async def run_forever(self):
     """
     Continuously call run() as fast as possible.
@@ -72,7 +121,7 @@ class StepperController:
       await self.run()
       # Without this await, we never yield back to the event loop
       await asyncio.sleep(0)
-
+    
   async def run_until_done(self):
     """
     Blockingly calls run() until is_move == False
