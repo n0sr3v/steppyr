@@ -1,9 +1,12 @@
 from steppyr.lib.functions import micros
 from . import RampProfile, calc_step_interval_us, calc_speed_from_step_interval, calc_direction
+import logging
 
 """
 Extracted from tmc26x driver
 """
+
+log = logging.getLogger(__name__)
 
 class RectangleProfile(RampProfile):
 
@@ -21,6 +24,7 @@ class RectangleProfile(RampProfile):
     self._current_speed = calc_speed_from_step_interval(self._step_interval_us)
     self._direction = calc_direction(self._speed or self.steps_to_go)
     self._next_step_time_us = micros() + self._step_interval_us
+    log.debug('self._current_speed=%s, self._direction=%s, self._current_steps=%s', self._current_speed, self._direction, self._current_steps)
     
   def stepsToStop(self):
     return 0
