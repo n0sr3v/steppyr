@@ -65,14 +65,14 @@ class StepperController:
     """
     self._profile.speed(speed)
    
-  async def try_sync_to(self, motor):
+  async def try_sync_to(self, motor, aim_delta=0):
     """
     Continuously call run() as fast as possible.
     """
     iteration = 0
-    while motor._profile.current_steps!=self._profile.current_steps:
+    while motor._profile.current_steps!=(self._profile.current_steps+aim_delta):
         iteration += 1
-        delta = motor._profile.current_steps-self._profile.current_steps
+        delta = motor._profile.current_steps-self._profile.current_steps+aim_delta
         log.debug('delta=%s, motor._profile.current_steps=%s, self._profile.current_steps=%s', delta, motor._profile.current_steps, self._profile.current_steps)
         if delta>0:
             self.speed(self.target_speed)
