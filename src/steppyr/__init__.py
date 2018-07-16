@@ -69,7 +69,9 @@ class StepperController:
     """
     Continuously call run() as fast as possible.
     """
+    iteration = 0
     while motor._profile.current_steps!=self._profile.current_steps:
+        iteration += 1
         delta = motor._profile.current_steps-self._profile.current_steps
         log.debug('delta=%s, motor._profile.current_steps=%s, self._profile.current_steps=%s', delta, motor._profile.current_steps, self._profile.current_steps)
         if delta>0:
@@ -77,50 +79,18 @@ class StepperController:
             while motor._profile.current_steps-delta/2>self._profile.current_steps:
                 # Without this await, we never yield back to the event loop
                 await asyncio.sleep(0)
-            log.debug('delta/2=%s, motor._profile.current_steps=%s, self._profile.current_steps=%s', delta/2, motor._profile.current_steps, self._profile.current_steps)
-            self.speed(motor._profile._speed)
-            while motor._profile._current_speed<=self._profile._current_speed:
-              # Without this await, we never yield back to the event loop
-              await asyncio.sleep(0)
         elif delta<0:
             self.speed(-self.target_speed)
             while motor._profile.current_steps-delta/2<self._profile.current_steps:
                 # Without this await, we never yield back to the event loop
                 await asyncio.sleep(0)
-            self.speed(motor._profile._speed)
-            while motor._profile._current_speed>=self._profile._current_speed:
-              # Without this await, we never yield back to the event loop
-              await asyncio.sleep(0)
-        log.debug('motor._profile.current_steps=%s, self._profile.current_steps=%s', motor._profile.current_steps, self._profile.current_steps)
-                
-  async def reached_step_goal(self, speed, step_delta):
-    """
-    Continuously call run() as fast as possible.
-    """
-    start_time_sync = micros()
-    start_time_steps = self._profile.current_steps
-    if step_delta>0:
-        self.speed(self.target_speed)
-        while (micros()-start_time_sync)/1000000*speed+step_delta > self._profile.current_steps-start_time_steps:
+        log.debug('delta/2=%s, motor._profile.current_steps=%s, self._profile.current_steps=%s', delta/2, motor._profile.current_steps, self._profile.current_steps)
+        self.speed(motor._profile._speed)
+        while motor._profile._ramp_step_number!=self._profile._ramp_step_number:#motor._profile._current_speed<=self._profile._current_speed:
           # Without this await, we never yield back to the event loop
-          await asyncio.sleep(0)
-        log.debug('half delta reached (%s)', ((micros()-start_time_sync)/1000000*speed+step_delta) - (self._profile.current_steps-start_time_steps))
-        log.debug('micros()/1000000=%s, start_time_sync/1000000=%s, speed=%s, step_delta=%s, self._profile.current_steps=%s, start_time_steps=%s', micros()/1000000, start_time_sync/1000000, speed, step_delta, self._profile.current_steps, start_time_steps)
-        self.speed(speed)
-        while self._profile._current_speed>speed:
-          # Without this await, we never yield back to the event loop
-          await asyncio.sleep(0)
-    elif step_delta<0:
-        self.speed(0)
-        while (micros()-start_time_sync)/1000000*speed+step_delta < self._profile.current_steps-start_time_steps:
-          # Without this await, we never yield back to the event loop
-          await asyncio.sleep(0)
-        log.debug('half delta reached (%s)', (micros()-start_time_sync)/1000000*speed+step_delta - self._profile.current_steps-start_time_steps)
-        self.speed(speed)
-        while self._profile._current_speed<speed:
-          # Without this await, we never yield back to the event loop
-          await asyncio.sleep(0)
-    log.debug('reached final speed ater iteration')
+          await asyncio.sleep(0)  
+        log.debug('RESULT (%s. iteration) motor._profile.current_steps=%s, self._profile.current_steps=%s', iteration, motor._profile.current_steps, self._profile.current_steps)
+    log.debug('SYNCRONIZED (%s iteration(s)) motor._profile.current_steps=%s = self._profile.current_steps=%s', iteration, motor._profile.current_steps, self._profile.current_steps)
     
   async def run_forever(self):
     """
