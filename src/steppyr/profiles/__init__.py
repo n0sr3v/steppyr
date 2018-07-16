@@ -42,6 +42,8 @@ class RampProfile:
     self._speed = 0
     # direction for speed control
     self._speed_memory = DIRECTION_NONE
+    # FIXME
+    self._ramp_step_number = 0
 
   def stop(self):
     """
@@ -205,6 +207,10 @@ class RampProfile:
     """
     if self._speed_memory!=DIRECTION_NONE:
         return self._speed_memory
+    elif self._speed>0:
+        return DIRECTION_CW
+    elif self._speed<0:
+        return DIRECTION_CCW
     else:
         # return DIRECTION_CW if self.distance_to_go > 0 else DIRECTION_CCW
         return calc_direction(self.steps_to_go)
