@@ -39,16 +39,12 @@ stepperB.set_pulse_width(2)
 
 async def stepperA_move():
     log.debug('stepperA.speed(500) ')
-    stepperA.speed(500)
-    await asyncio.sleep(6)
+    stepperA.speed(-500)
+    await asyncio.sleep(8)
 async def stepperB_move():
     await asyncio.sleep(2)
-    stepperB.speed(500)
-    await asyncio.sleep(2)
-    log.debug('stepperA.current_steps=%s, stepperB.current_steps=%s',stepperA.current_steps, stepperB.current_steps)
-    log.debug('stepperB.try_sync_to(500, stepperA.current_steps-stepperB.current_steps)')
+    log.debug('stepperB.try_sync_to(stepperA) (stepperA.current_steps=%s, stepperB.current_steps=%s)',stepperA.current_steps, stepperB.current_steps)
     await stepperB.try_sync_to(stepperA)
-    await asyncio.sleep(2)
 	
 	
 loop = asyncio.get_event_loop()
