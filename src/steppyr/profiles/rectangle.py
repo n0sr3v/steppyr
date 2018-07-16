@@ -7,8 +7,8 @@ Extracted from tmc26x driver
 
 class RectangleProfile(RampProfile):
 
-  def __init__(self):
-    super().__init__()
+  def __init__(self, name=None):
+    super().__init__(name)
 
   def compute_new_speed(self):
     # This is the original rpm based way
@@ -16,11 +16,14 @@ class RectangleProfile(RampProfile):
     # steps_per_min = self._steps_per_rev * self.speed_rpm * self.microsteps
     # self._step_interval_us = us_per_min / steps_per_min
 
-    self._step_interval_us = calc_step_interval_us(self._target_speed)
+    self._step_interval_us = calc_step_interval_us(abs(self._speed) or self._target_speed)
     # Derive current speed from _step_interval_us
     self._current_speed = calc_speed_from_step_interval(self._step_interval_us)
-    self._direction = calc_direction(self.steps_to_go)
+    self._direction = calc_direction(self._speed or self.steps_to_go)
     self._next_step_time_us = micros() + self._step_interval_us
+    
+  def stepsToStop(self):
+    return 0
 
   """
   TODO implment this rpm based way also
