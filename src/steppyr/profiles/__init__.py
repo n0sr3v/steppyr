@@ -82,6 +82,8 @@ class RampProfile:
 
   def set_target_steps(self, absolute_steps):
     if self._target_steps != absolute_steps:
+      self._speed = 0
+      self._speed_memory = DIRECTION_NONE
       self._previous_target_steps = self._target_steps
       self._target_steps = absolute_steps
       self.compute_new_speed()
@@ -95,17 +97,10 @@ class RampProfile:
       self.set_target_steps(self._current_steps+stepsToStop)
       self._speed = 0
     elif self._speed != speed:
+      self._target_steps = 0
       self._speed = speed
-      log.debug('self._name=%s self.compute_new_speed() self._speed=%s, self.direction=%s',self._name, self._speed, self.direction)
+      log.debug('self._name=%s setting new speed self._speed=%s, self.direction=%s',self._name, self._speed, self.direction)
     self.compute_new_speed()
-    
-  def catch_up(self, speed, step_distance):
-    catchup_start_time = micros()
-    steps_at_start = self._current_steps
-    if(step_distance>0):
-      pass
-    elif(step_distance<0):
-      pass
  
   def set_target_acceleration(self, acceleration):
     """
@@ -184,7 +179,7 @@ class RampProfile:
     """
     Returns true if we should take a step.
     """
-    if (not self.step_interval_us or not self.steps_to_go) and self._speed_memory == DIRECTION_NONE:
+    if (not self.step_interval_us or not self.steps_to_go) and self._speed_memory == DIRECTION_NONE and self._speed==0:
       return False
     return (self._next_step_time_us and micros() >= self._next_step_time_us)
 
@@ -201,21 +196,18 @@ class RampProfile:
 
   @property
   def is_moving(self):
-    return self.steps_to_go != 0
+    return self._speed!=0 or self.steps_to_go != 0
 
   @property
   def direction(self):
     """
     Calculates direction based on distance to go 
     """
-    
     if self._speed_memory!=DIRECTION_NONE:
         return self._speed_memory
     else:
         # return DIRECTION_CW if self.distance_to_go > 0 else DIRECTION_CCW
         return calc_direction(self.steps_to_go)
-     
-    #return calc_direction(self.steps_to_go)
 
   @property
   def step_interval_us(self):
