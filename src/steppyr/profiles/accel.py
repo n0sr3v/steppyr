@@ -67,28 +67,6 @@ class AccelProfile(RampProfile):
     # stepsToStop = int(((self._current_speed * self._current_speed) / (2.0 * self._target_acceleration))) # Equation 16
     # Get number of steps until stop per Equation 16
     stepsToStop = self.stepsToStop()
-    '''
-    log.debug('self._speed=%s, self._speed_memory=%s, self.direction=%s, self._direction=%s, self._name=%s, stepsToStop=%s', self._speed, self._speed_memory, self.direction, self._direction, self._name, stepsToStop)
-    # speed logic => trick myself ;)
-    # do i need to make a u turn?
-    if self._speed!=0 and distanceTo == 0 and stepsToStop <= 1:
-      if self._speed > 0 and self._speed_memory<0:
-        self._speed_memory=self._speed
-      elif self._speed < 0 and self._speed_memory>0:
-        self._speed_memory=self._speed
-    # fullpower or slowing down ?
-    if self._speed > 0 and self._speed_memory>0:
-      distanceTo = stepsToStop + 1
-    elif self._speed < 0 and self._speed_memory<0:
-      distanceTo = -(stepsToStop + 1)
-    elif distanceTo == 0 and stepsToStop > 1:
-      #if self._speed_memory>0:
-        #distanceTo = stepsToStop
-      #elif self._speed_memory<0:
-        #distanceTo = -stepsToStop
-      log.debug('speed = 0 : distanceTo=%s, self._ramp_step_number=%s', distanceTo, self._ramp_step_number)
-    # step sync logic => trick myself again :D
-	'''
 
     if distanceTo == 0 and stepsToStop <= 1 and self._speed==0:
       # We are at the target and its time to stop
