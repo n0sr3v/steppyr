@@ -9,8 +9,8 @@ def constrain(value, minn, maxn):
     return max(min(maxn, value), minn)
 
 class MaxProfile(RampProfile):
-  def __init__(self, acceleration_steps=0, max_start_speed=0.0, deceleration_steps=0):
-    super().__init__()
+  def __init__(self, acceleration_steps=0, max_start_speed=0.0, deceleration_steps=0, name=None):
+    super().__init__(name)
     self._last_direction = DIRECTION_NONE
     # Number of steps to take to go from min start speed to target speed
     self._acceleration_steps = acceleration_steps
